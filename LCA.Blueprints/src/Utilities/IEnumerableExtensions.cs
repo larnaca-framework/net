@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,5 +34,13 @@ namespace LCA.Blueprints
         // Enumerable.Empty contains a static, empty, enumeration so  it's not instantiated per call
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T>? target)
             => target ?? Enumerable.Empty<T>();
+
+        public static T[] Concat<T>(this T[] array1, T[] array2)
+        {
+            T[] theReturn = new T[array1.Length + array2.Length];
+            Array.Copy(array1, theReturn, array1.Length);
+            Array.Copy(array2, 0, theReturn, array1.Length, array2.Length);
+            return theReturn;
+        }
     }
 }

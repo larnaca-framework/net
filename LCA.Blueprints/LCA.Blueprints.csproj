@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors>Larnaca Framework 🌴</Authors>
     <Description>Nuget contains all the basic types required for a Larnaca Framework 🌴 project</Description>
-    <Version>0.1.0</Version>
+    <Version>0.0.1-alpha</Version>
     <PackageTags>Microservices;Larnaca;Larnaka;Larnaca Framework;Larnaka Framework;Microservices Framework;Build;🌴</PackageTags>
     <PackageProjectUrl>https://github.com/larnaca-framework/net</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -11,8 +11,7 @@
     <PackageId>LCA.Blueprints</PackageId>
     <AssemblyName>LCA.Blueprints</AssemblyName>
     <Product>LCA.Blueprints</Product>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>    
 
     <Nullable>enable</Nullable>    
     <TargetFramework>net5.0</TargetFramework>
