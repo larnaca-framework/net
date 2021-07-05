@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Authors>Larnaca Framework 🌴</Authors>
+    <Description>Nuget intended to analyze types of Larnaca Framework 🌴 projects</Description>
+    <Version>0.0.1-alpha</Version>
+    <PackageTags>Microservices;Larnaca;Larnaka;Larnaca Framework;Larnaka Framework;Microservices Framework;Build;🌴</PackageTags>
+    <PackageProjectUrl>https://github.com/larnaca-framework/net</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/larnaca-framework/net</RepositoryUrl>
+    <PackageId>LCA.Schematics</PackageId>
+    <AssemblyName>LCA.Schematics</AssemblyName>
+    <Product>LCA.Schematics</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <Nullable>enable</Nullable>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <noWarn>1591</noWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug'">
+    <ProjectReference Include="../LCA.Blueprints/LCA.Blueprints.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' != 'Debug'">
+    <PackageReference Include="LCA.Blueprints" Version="0.0.1-alpha" />
+  </ItemGroup>
+</Project>
