@@ -8,6 +8,7 @@ namespace LCA.Schematics
 {
     /// <summary>
     /// A reference to a type, does not actually contain the type definition, but the definition can be found using it
+    /// Immutable
     /// </summary>
     public class TypeRef : ICloneable, IEquatable<TypeRef>
     {
@@ -30,32 +31,59 @@ namespace LCA.Schematics
 
             if (arrayDimensions.IsAny())
             {
-                SimpleRef = Clone();
-                SimpleRef.ArrayDimensions = null;
+                SimpleRef = new TypeRef(
+                    Kind,
+                    Name,
+                    IsFramework,
+                    Namespace,
+                    NestedIn?.Clone(),
+                    null,
+                    GenericArguments?.Select(a => a.Clone()).ToArray()
+                );
             }
             else
             {
                 SimpleRef = this;
             }
         }
-        public ETypeRefKind Kind { get; private set; }
+        private TypeRef(
+            ETypeRefKind kind,
+            string name,
+            TypeRef simpleRef,
+            bool isFramework = false,
+            string? @namespace = default,
+            TypeRef? nestedIn = default,
+            int[]? arrayDimensions = default,
+            TypeRef[]? genericArguments = default
+            )
+        {
+            Kind = kind;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            IsFramework = isFramework;
+            Namespace = @namespace;
+            NestedIn = nestedIn;
+            ArrayDimensions = arrayDimensions;
+            GenericArguments = genericArguments;
+            SimpleRef = simpleRef ?? throw new ArgumentNullException(nameof(simpleRef)); ;
+        }
+        public ETypeRefKind Kind { get; }
         /// <summary>
         /// can be an empty string for a 
         /// </summary>
         /// <value></value>
-        public string Name { get; private set; }
+        public string Name { get; }
         /// <summary>
         /// type is included in the net 5.0 framework, e.g. <![CDATA[ List<> ]]> or a primitive such as bool
         /// </summary>
-        public bool IsFramework { get; private set; }
-        public string? Namespace { get; private set; }
-        public TypeRef? NestedIn { get; private set; }
+        public bool IsFramework { get; }
+        public string? Namespace { get; }
+        public TypeRef? NestedIn { get; }
         /// <summary>
         /// a non-array is denoted as null/empty
         /// a one-dimensional array (e.g. foo[]) is denoted as {1}
         /// a multi-dimensional jagged array (e.g. foo[,][][,,]) is denoted as {2,1,3}
         /// </summary>
-        public int[]? ArrayDimensions { get; private set; }
+        public int[]? ArrayDimensions { get; }
         /// <summary>
         /// - If the current type is a closed constructed type (that is, the ContainsGenericParameters property returns false), 
         /// the array contains the types that have been assigned to the generic type parameters of the generic type definition.
@@ -64,12 +92,21 @@ namespace LCA.Schematics
         /// in which specific types have not been assigned to all of the type parameters and type parameters of enclosing generic types, 
         /// the array contains both types and type parameters
         /// </summary>
-        public TypeRef[]? GenericArguments { get; private set; }
+        public TypeRef[]? GenericArguments { get; }
 
         /// <summary>
         /// A reference to the type in it's most simple form, e.g. without array dimensions 
         /// </summary>
         public TypeRef SimpleRef { get; }
+        public TypeRef PrependArrayDimension(int dimension) => new TypeRef(
+            Kind,
+            Name,
+            IsFramework,
+            Namespace,
+            NestedIn?.Clone(),
+            ArrayDimensions?.Prepend(dimension).ToArray() ?? new[] { dimension },
+            GenericArguments?.Select(a => a.Clone()).ToArray()
+        );
         object ICloneable.Clone() => Clone();
         public TypeRef Clone() => new TypeRef(
             Kind,
@@ -120,5 +157,36 @@ namespace LCA.Schematics
             => a?.Equals(b) ?? b is null;
         public static bool operator !=(TypeRef? a, TypeRef? b)
             => !(a == b);
+
+        public override string ToString()
+        {
+            string? theReturn;
+            if (NestedIn != null)
+            {
+                theReturn = $"{NestedIn}.{Name}";
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(Namespace))
+                {
+                    theReturn = Name;
+                }
+                else
+                {
+                    theReturn = $"{Namespace}.{Name}";
+                }
+            }
+
+
+            if (GenericArguments.IsAny())
+            {
+                theReturn += $"<{string.Join(',', GenericArguments!.Select(a => a.ToString()))}>";
+            }
+            foreach (var dim in ArrayDimensions.EmptyIfNull())
+            {
+                theReturn += $"[{string.Concat(Enumerable.Repeat(',', dim - 1))}]";
+            }
+            return theReturn;
+        }
     }
 }

@@ -9,111 +9,129 @@ namespace LCA.Schematics
         TypeRefBuilder.IOptionalWithNamespace,
         TypeRefBuilder.IOptional
     {
-        ETypeRefKind _kind;
+        public ETypeRefKind Kind { get; private set; }
 
         // will be initialized by the builder in the WithName(...) method
 #nullable disable
-        string _name;
+        public string Name { get; private set; }
 #nullable enable
-        bool _isFramework;
-        string? _namespace;
-        TypeRef? _nestedIn;
-        int[]? _arrayDimensions;
-        TypeRef[]? _genericArguments;
+        public bool IsFramework { get; private set; }
+        public string? Namespace { get; private set; }
+        public TypeRef? NestedIn { get; private set; }
+        public int[]? ArrayDimensions { get; private set; }
+        public TypeRef[]? GenericArguments { get; private set; }
         public static IStart Start() => new TypeRefBuilder();
         public IOptional From(TypeRef typeRef)
         {
-            _kind = typeRef.Kind;
-            _name = typeRef.Name;
-            _isFramework = typeRef.IsFramework;
-            _namespace = typeRef.Namespace;
-            _nestedIn = typeRef.NestedIn?.Clone();
-            _arrayDimensions = typeRef.ArrayDimensions;
-            _genericArguments = typeRef.GenericArguments?.Select(a => a.Clone()).ToArray();
+            Kind = typeRef.Kind;
+            Name = typeRef.Name;
+            IsFramework = typeRef.IsFramework;
+            Namespace = typeRef.Namespace;
+            NestedIn = typeRef.NestedIn?.Clone();
+            ArrayDimensions = typeRef.ArrayDimensions;
+            GenericArguments = typeRef.GenericArguments?.Select(a => a.Clone()).ToArray();
             return this;
         }
         IName IStart.WithKind(ETypeRefKind kind)
         {
-            _kind = kind;
+            Kind = kind;
             return this;
         }
         IOptionalWithNamespace IName.WithName(string name)
         {
-            _name = name;
+            Name = name;
             return this;
         }
-        IOptional IName.WithName(string @namespace, string name)
+        IOptional IName.WithName(string? @namespace, string name)
         {
-            _namespace = @namespace;
-            _name = name;
+            Namespace = @namespace;
+            Name = name;
             return this;
         }
 
-        IOptional IOptionalWithNamespace.WithNamespace(string @namespace)
+        IOptional IOptionalWithNamespace.WithNamespace(string? @namespace)
         {
-            _namespace = @namespace;
+            Namespace = @namespace;
             return this;
         }
         IOptional IOptional.WithArrayDimensions(int[] dimensions) => (IOptional)(this as IOptionalWithNamespace).WithArrayDimensions(dimensions);
         IOptionalWithNamespace IOptionalWithNamespace.WithArrayDimensions(int[] dimensions)
         {
-            _arrayDimensions = _arrayDimensions?.Concat(dimensions) ?? dimensions;
+            ArrayDimensions = ArrayDimensions?.Concat(dimensions) ?? dimensions;
             return this;
         }
         IOptional IOptional.WithGenericArguments(params TypeRef[] arguments) => (IOptional)(this as IOptionalWithNamespace).WithGenericArguments(arguments);
         IOptionalWithNamespace IOptionalWithNamespace.WithGenericArguments(params TypeRef[] arguments)
         {
-            _genericArguments = _genericArguments?.Concat(arguments) ?? arguments;
+            GenericArguments = GenericArguments?.Concat(arguments) ?? arguments;
             return this;
         }
         IOptional IOptional.WithGenericParameters(params string[] parameters) => (IOptional)(this as IOptionalWithNamespace).WithGenericParameters(parameters);
         IOptionalWithNamespace IOptionalWithNamespace.WithGenericParameters(params string[] parameters)
         {
             var typedParameters = parameters.Select(p => new TypeRef(ETypeRefKind.GenericParameter, p, false)).ToArray();
-            _genericArguments = _genericArguments?.Concat(typedParameters) ?? typedParameters;
+            GenericArguments = GenericArguments?.Concat(typedParameters) ?? typedParameters;
             return this;
         }
         IOptional IOptional.WithNestedIn(TypeRef nestedId) => (IOptional)(this as IOptionalWithNamespace).WithNestedIn(nestedId);
         IOptionalWithNamespace IOptionalWithNamespace.WithNestedIn(TypeRef nestedId)
         {
-            _nestedIn = nestedId;
+            NestedIn = nestedId;
+            return this;
+        }
+        IOptional IOptional.WithIsFramework(bool isFramework) => (IOptional)(this as IOptionalWithNamespace).WithIsFramework(isFramework);
+        IOptionalWithNamespace IOptionalWithNamespace.WithIsFramework(bool isFramework)
+        {
+            IsFramework = isFramework;
             return this;
         }
         TypeRef IOptional.Build() => (this as IOptionalWithNamespace).Build();
         TypeRef IOptionalWithNamespace.Build() => new TypeRef(
-                _kind,
-                _name,
-                _isFramework,
-                _namespace,
-                _nestedIn,
-                _arrayDimensions,
-                _genericArguments
+                Kind,
+                Name,
+                IsFramework,
+                Namespace,
+                NestedIn,
+                ArrayDimensions,
+                GenericArguments
             );
         public interface IStart
         {
             IOptional From(TypeRef typeRef);
             IName WithKind(ETypeRefKind kind);
         }
-        public interface IName
+        public interface IName : IStart
         {
+            public ETypeRefKind Kind { get; }
             IOptionalWithNamespace WithName(string name);
-            IOptional WithName(string @namespace, string name);
+            IOptional WithName(string? @namespace, string name);
         }
-        public interface IOptionalWithNamespace
+        public interface IOptionalWithNamespace : IName
         {
-            IOptional WithNamespace(string @namespace);
+            bool IsFramework { get; }
+            TypeRef? NestedIn { get; }
+            int[]? ArrayDimensions { get; }
+            TypeRef[]? GenericArguments { get; }
+            IOptional WithNamespace(string? @namespace);
             IOptionalWithNamespace WithArrayDimensions(int[] dimensions);
             IOptionalWithNamespace WithGenericArguments(params TypeRef[] arguments);
             IOptionalWithNamespace WithGenericParameters(params string[] parameters);
             IOptionalWithNamespace WithNestedIn(TypeRef nestedId);
+            IOptionalWithNamespace WithIsFramework(bool isFramework);
             TypeRef Build();
         }
-        public interface IOptional
+        public interface IOptional : IName
         {
+            bool IsFramework { get; }
+            string? Namespace { get; }
+            TypeRef? NestedIn { get; }
+            int[]? ArrayDimensions { get; }
+            TypeRef[]? GenericArguments { get; }
             IOptional WithArrayDimensions(int[] dimensions);
             IOptional WithGenericArguments(params TypeRef[] arguments);
             IOptional WithGenericParameters(params string[] parameters);
             IOptional WithNestedIn(TypeRef nestedId);
+            IOptional WithIsFramework(bool isFramework);
             TypeRef Build();
         }
     }
