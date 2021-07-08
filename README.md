@@ -3,7 +3,7 @@
 
 ## Environment and building
 
-This repository includes the setup for the VSCode Remote Containers [https://code.visualstudio.com/docs/remote/containers](documentation).
+This repository includes the setup for the [VSCode Remote Containers](https://code.visualstudio.com/docs/remote/containers).
 Open it as a remote container and start hacking away.
 
 ## Overview
