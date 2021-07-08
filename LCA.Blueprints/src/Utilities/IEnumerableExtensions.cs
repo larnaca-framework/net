@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace LCA.Blueprints
 {
@@ -41,6 +43,17 @@ namespace LCA.Blueprints
             Array.Copy(array1, theReturn, array1.Length);
             Array.Copy(array2, 0, theReturn, array1.Length, array2.Length);
             return theReturn;
+        }
+        public static int GetArrayHashCode<T>(this T[]? array, IEqualityComparer<T>? comparer = default)
+            => ((IStructuralEquatable)array!).GetHashCode((IEqualityComparer)(comparer ?? EqualityComparer<T>.Default));
+
+        public static bool SequenceEqualOrBothNull<T>(this IEnumerable<T>? a, IEnumerable<T>? b, IEqualityComparer<T>? comparer = default)
+        {
+            if (a is null || b is null)
+            {
+                return (a is null && b is null);
+            }
+            return a.SequenceEqual(b, comparer);
         }
     }
 }

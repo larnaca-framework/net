@@ -9,72 +9,86 @@ namespace LCA.Schematics
         TypeRefBuilder.IOptionalWithNamespace,
         TypeRefBuilder.IOptional
     {
-        private TypeRef typeRef;
+        ETypeRefKind _kind;
+
+        // will be initialized by the builder in the WithName(...) method
+#nullable disable
+        string _name;
+#nullable enable
+        bool _isFramework;
+        string? _namespace;
+        TypeRef? _nestedIn;
+        int[]? _arrayDimensions;
+        TypeRef[]? _genericArguments;
         public static IStart Start() => new TypeRefBuilder();
         public IOptional From(TypeRef typeRef)
         {
-            this.typeRef = typeRef.Clone();
+            _kind = typeRef.Kind;
+            _name = typeRef.Name;
+            _isFramework = typeRef.IsFramework;
+            _namespace = typeRef.Namespace;
+            _nestedIn = typeRef.NestedIn?.Clone();
+            _arrayDimensions = typeRef.ArrayDimensions;
+            _genericArguments = typeRef.GenericArguments?.Select(a => a.Clone()).ToArray();
             return this;
         }
         IName IStart.WithKind(ETypeRefKind kind)
         {
-            typeRef = new TypeRef()
-            {
-                Kind = kind
-            };
+            _kind = kind;
             return this;
         }
         IOptionalWithNamespace IName.WithName(string name)
         {
-            typeRef.Name = name;
+            _name = name;
             return this;
         }
         IOptional IName.WithName(string @namespace, string name)
         {
-            typeRef.Namespace = @namespace;
-            typeRef.Name = name;
+            _namespace = @namespace;
+            _name = name;
             return this;
         }
 
         IOptional IOptionalWithNamespace.WithNamespace(string @namespace)
         {
-            typeRef.Namespace = @namespace;
+            _namespace = @namespace;
             return this;
         }
         IOptional IOptional.WithArrayDimensions(int[] dimensions) => (IOptional)(this as IOptionalWithNamespace).WithArrayDimensions(dimensions);
         IOptionalWithNamespace IOptionalWithNamespace.WithArrayDimensions(int[] dimensions)
         {
-            typeRef.ArrayDimensions = typeRef.ArrayDimensions?.Concat(dimensions) ?? dimensions;
+            _arrayDimensions = _arrayDimensions?.Concat(dimensions) ?? dimensions;
             return this;
         }
         IOptional IOptional.WithGenericArguments(params TypeRef[] arguments) => (IOptional)(this as IOptionalWithNamespace).WithGenericArguments(arguments);
         IOptionalWithNamespace IOptionalWithNamespace.WithGenericArguments(params TypeRef[] arguments)
         {
-            typeRef.GenericArguments = typeRef.GenericArguments?.Concat(arguments) ?? arguments;
+            _genericArguments = _genericArguments?.Concat(arguments) ?? arguments;
             return this;
         }
         IOptional IOptional.WithGenericParameters(params string[] parameters) => (IOptional)(this as IOptionalWithNamespace).WithGenericParameters(parameters);
         IOptionalWithNamespace IOptionalWithNamespace.WithGenericParameters(params string[] parameters)
         {
-            var typedParameters = parameters.Select(p => new TypeRef()
-            {
-                Kind = ETypeRefKind.GenericParameter,
-                Name = p,
-            }).ToArray();
-            typeRef.GenericArguments = typeRef.GenericArguments?.Concat(typedParameters) ?? typedParameters;
+            var typedParameters = parameters.Select(p => new TypeRef(ETypeRefKind.GenericParameter, p, false)).ToArray();
+            _genericArguments = _genericArguments?.Concat(typedParameters) ?? typedParameters;
             return this;
         }
         IOptional IOptional.WithNestedIn(TypeRef nestedId) => (IOptional)(this as IOptionalWithNamespace).WithNestedIn(nestedId);
         IOptionalWithNamespace IOptionalWithNamespace.WithNestedIn(TypeRef nestedId)
         {
-            typeRef.NestedIn = nestedId;
+            _nestedIn = nestedId;
             return this;
         }
         TypeRef IOptional.Build() => (this as IOptionalWithNamespace).Build();
-        TypeRef IOptionalWithNamespace.Build()
-        {
-            return typeRef;
-        }
+        TypeRef IOptionalWithNamespace.Build() => new TypeRef(
+                _kind,
+                _name,
+                _isFramework,
+                _namespace,
+                _nestedIn,
+                _arrayDimensions,
+                _genericArguments
+            );
         public interface IStart
         {
             IOptional From(TypeRef typeRef);
