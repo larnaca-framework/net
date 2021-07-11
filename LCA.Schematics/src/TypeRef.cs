@@ -21,6 +21,10 @@ namespace LCA.Schematics
             int[]? arrayDimensions = default,
             TypeRef[]? genericArguments = default)
         {
+            if (!Enum.IsDefined<ETypeRefKind>(kind))
+            {
+                throw new ArgumentOutOfRangeException(nameof(kind), $"The kind {kind} is not defained in enum {nameof(ETypeRefKind)}");
+            }
             Kind = kind;
             Name = name ?? throw new ArgumentNullException(nameof(name));
             IsFramework = isFramework;
@@ -57,6 +61,10 @@ namespace LCA.Schematics
             TypeRef[]? genericArguments = default
             )
         {
+            if (!Enum.IsDefined<ETypeRefKind>(kind))
+            {
+                throw new ArgumentOutOfRangeException(nameof(kind), $"The kind {kind} is not defained in enum {nameof(ETypeRefKind)}");
+            }
             Kind = kind;
             Name = name ?? throw new ArgumentNullException(nameof(name));
             IsFramework = isFramework;

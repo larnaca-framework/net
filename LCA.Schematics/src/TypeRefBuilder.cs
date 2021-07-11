@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using LCA.Blueprints;
 
@@ -34,6 +35,10 @@ namespace LCA.Schematics
         }
         IName IStart.WithKind(ETypeRefKind kind)
         {
+            if (!Enum.IsDefined<ETypeRefKind>(kind))
+            {
+                throw new ArgumentOutOfRangeException(nameof(kind), $"The kind {kind} is not defained in enum {nameof(ETypeRefKind)}");
+            }
             Kind = kind;
             return this;
         }

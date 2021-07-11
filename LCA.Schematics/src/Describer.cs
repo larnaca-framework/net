@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -11,13 +12,15 @@ namespace LCA.Schematics
     public class Describer
     {
         public static Describer Default { get; } = new Describer();
-        private Dictionary<Type, TypeRef> _refs = new Dictionary<Type, TypeRef>();
-        private Model _model = new Model();
-        private HashSet<Assembly> _frameworkAssemblies = new HashSet<Assembly>()
+        public Describer() : this(new Model(), new HashSet<Assembly>() { typeof(object).Assembly })
+        { }
+        public Describer(Model model, HashSet<Assembly> frameworkAssemblies)
         {
-            typeof(object).Assembly,
-            typeof(List<>).Assembly
-        };
+            _model = model ?? throw new ArgumentNullException(nameof(Model));
+            _frameworkAssemblies = frameworkAssemblies ?? throw new ArgumentNullException(nameof(frameworkAssemblies));
+        }
+        private Model _model;
+        private HashSet<Assembly> _frameworkAssemblies;
         public TypeRef GetRef<T>(T obj)
         {
             if (obj is Type type)
@@ -34,7 +37,7 @@ namespace LCA.Schematics
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (_refs.TryGetValue(type, out var existing))
+            if (_model.TypeRefs.TryGetValue(type, out var existing))
             {
                 return existing;
             }
@@ -61,8 +64,18 @@ namespace LCA.Schematics
             {
                 builder.WithGenericArguments(type.GetGenericArguments().Select(t => GetRef(t)).ToArray());
             }
-
-            return _refs[type] = builder.Build();
+            var theReturn = builder.Build(); ;
+            _model.AddTypeRef(type, theReturn);
+            return theReturn;
+        }
+        public bool TryOutlineType(Type type, out TypeRef typeRef, [NotNullWhen(true)] TypeOutline? outline)
+        {
+            typeRef = GetRef(type);
+            if (typeRef.IsFramework || (int)typeRef.Kind > 2) // class, interface or enum
+            {
+                return false;
+            }
+            throw new NotImplementedException();
         }
         public static ETypeRefKind GetTypeRefKind(Type type)
         {
